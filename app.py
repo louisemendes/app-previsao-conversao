@@ -97,22 +97,16 @@ st.divider()
 # --- BOTÃO DE PREVISÃO E RESULTADO ---
 if st.button('🔮 Prever Probabilidade de Compra', type="primary", use_container_width=True):
     
-    # Criar o DataFrame inicial com os dados do usuário
     new_data = pd.DataFrame({
         'Administrative': [administrative], 'Administrative_Duration': [administrative_duration],
         'Informational': [informational], 'Informational_Duration': [informational_duration],
         'ProductRelated': [product_related], 'ProductRelated_Duration': [product_related_duration],
         'BounceRates': [bounce_rates], 'ExitRates': [exit_rates],
         'PageValues': [page_values], 'SpecialDay': [special_day],
-        'Month': [month], 
-        'OperatingSystems': [operating_systems], 
-        'Browser': [browser], 
-        'Region': [region], 
-        'TrafficType': [traffic_type], 
-        'VisitorType': [visitor_type], 'Weekend': [weekend]
+        'Month': [month], 'OperatingSystems': [operating_systems], 'Browser': [browser], 
+        'Region': [region], 'TrafficType': [traffic_type], 'VisitorType': [visitor_type], 'Weekend': [weekend]
     })
     
-    # Fazer a Engenharia de Features
     month_map_notebook = {abbr: idx for idx, abbr in enumerate(month_abbr) if abbr}
     try:
         month_abbr_map = {'June': 'Jun'}
@@ -126,14 +120,22 @@ if st.button('🔮 Prever Probabilidade de Compra', type="primary", use_containe
     new_data['PagesPerMinute'] = new_data['TotalPageVisits'] / np.where(new_data['TotalDuration'] > 0, new_data['TotalDuration'] / 60, 1)
     new_data['ProductEngagement'] = np.where(new_data['TotalPageVisits'] > 0, new_data['ProductRelated'] / new_data['TotalPageVisits'], 0)
 
-    # Fazer a Previsão
     with st.spinner("Analisando os dados..."):
+        # Nós ainda calculamos a probabilidade para poder mostrá-la como informação de apoio.
         prob = loaded_pipe.predict_proba(new_data)[0][1]
+        # A previsão binária vem do método .predict()
         prediction = loaded_pipe.predict(new_data)[0]
 
-    # Exibir o Resultado
-    st.subheader('Resultado da Previsão:')
+    # --- O BLOCO DE RESULTADO FOI MODIFICADO AQUI ---
+    st.subheader('Veredito da Previsão:')
+    
     if prediction == 1:
-        st.success(f'**Alta Chance de Compra!** A probabilidade de conversão é de **{prob:.1%}**.')
+        # Usamos uma caixa de sucesso (verde) para a previsão positiva.
+        st.success('✅ **Previsão: O usuário VAI COMPRAR.**')
+        # A probabilidade entra como uma informação secundária de confiança.
+        st.info(f"O modelo está **{prob:.1%}** confiante nesta previsão.")
     else:
-        st.warning(f'**Baixa Chance de Compra.** A probabilidade de conversão é de **{prob:.1%}**.')
+        # Usamos uma caixa de erro (vermelha) para a previsão negativa.
+        st.error('❌ **Previsão: O usuário NÃO VAI COMPRAR.**')
+        # A probabilidade aqui mostra quão baixa era a chance.
+        st.info(f"A probabilidade de compra calculada foi de apenas **{prob:.1%}**.")
