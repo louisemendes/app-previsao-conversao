@@ -95,7 +95,7 @@ with col6:
 st.divider()
 
 # --- BOTÃO DE PREVISÃO E RESULTADO ---
-if st.button('🔮 Prever Probabilidade de Compra', type="primary", use_container_width=True):
+if st.button('🔮', type="primary", use_container_width=True):
     
     new_data = pd.DataFrame({
         'Administrative': [administrative], 'Administrative_Duration': [administrative_duration],
