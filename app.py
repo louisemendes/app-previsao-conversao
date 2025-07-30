@@ -15,12 +15,12 @@ except FileNotFoundError:
     st.stop()
 
 # --- INTERFACE DO USUÁRIO ---
-st.title('📈 Previsão de Conversão de E-commerce')
+st.title('Previsão de Conversão de E-commerce')
 st.write("Esta ferramenta usa um modelo de Machine Learning para prever a probabilidade de um visitante realizar uma compra.")
 
 
 # --- GUIA DE INTERPRETAÇÃO (DENTRO DE UM EXPANDER) ---
-with st.expander("📖 Clique aqui para ver o Guia de Interpretação dos Campos"):
+with st.expander("Clique aqui para ver o Guia de Interpretação dos Campos"):
     st.markdown("""
     Este guia explica o que cada campo significa e como interpretá-lo.
     
@@ -131,11 +131,11 @@ if st.button('🔮 Prever Probabilidade de Compra', type="primary", use_containe
     
     if prediction == 1:
         # Usamos uma caixa de sucesso (verde) para a previsão positiva.
-        st.success('✅ **Previsão: O usuário VAI COMPRAR.**')
+        st.success('**Previsão: O usuário VAI COMPRAR.**')
         # A probabilidade entra como uma informação secundária de confiança.
         st.info(f"O modelo está **{prob:.1%}** confiante nesta previsão.")
     else:
         # Usamos uma caixa de erro (vermelha) para a previsão negativa.
-        st.error('❌ **Previsão: O usuário NÃO VAI COMPRAR.**')
+        st.error('**Previsão: O usuário NÃO VAI COMPRAR.**')
         # A probabilidade aqui mostra quão baixa era a chance.
         st.info(f"A probabilidade de compra calculada foi de apenas **{prob:.1%}**.")
