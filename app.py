@@ -15,30 +15,31 @@ except FileNotFoundError:
     st.stop()
 
 # --- INTERFACE DO USUÁRIO ---
-st.title('Previsão de Conversão de E-commerce')
+st.title('📈 Previsão de Conversão de E-commerce')
 st.write("Esta ferramenta usa um modelo de Machine Learning para prever a probabilidade de um visitante realizar uma compra.")
 
+
 # --- GUIA DE INTERPRETAÇÃO (DENTRO DE UM EXPANDER) ---
-with st.expander("Clique aqui para ver o Guia de Interpretação dos Campos"):
+with st.expander("📖 Clique aqui para ver o Guia de Interpretação dos Campos"):
     st.markdown("""
     Este guia explica o que cada campo significa e como interpretá-lo.
-
+    
     ### Comportamento
-    *   **Páginas Administrativas (`Administrative`):** Páginas de login, perfil, histórico de pedidos.
-    *   **Páginas Informativas (`Informational`):** Páginas como "Sobre Nós", "Contato", "FAQ".
-    *   **Páginas de Produto (`ProductRelated`):** Páginas de produtos, categorias, busca.
+    *   **Páginas Administrativas (Administrative):** Páginas de login, perfil, histórico de pedidos.
+    *   **Páginas Informativas (Informational):** Páginas como "Sobre Nós", "Contato", "FAQ".
+    *   **Páginas de Produto (ProductRelated):** Páginas de produtos, categorias, busca.
 
     ### Tempo Gasto (segundos)
     *   **Duração em Páginas...:** Quanto tempo o cliente gastou em cada tipo de página.
 
     ### Métricas da Sessão
-    *   **Taxa de Rejeição (`BounceRates`):** % de visitantes que entram e saem sem clicar em nada.
-    *   **Taxa de Saída (`ExitRates`):** % de vezes que uma página foi a última da sessão.
-    *   **Valor da Página (`PageValues`):** Valor médio de uma página visitada antes de uma compra.
+    *   **Taxa de Rejeição (BounceRates):** % de visitantes que entram e saem sem clicar em nada.
+    *   **Taxa de Saída (ExitRates):** % de vezes que uma página foi a última da sessão.
+    *   **Valor da Página (PageValues):** Valor médio de uma página visitada antes de uma compra.
 
     ### Contexto Temporal
-    *   **Mês (`Month`):** A sazonalidade é crucial (ex: `Nov` para Black Friday).
-    *   **Proximidade de Dia Especial (`SpecialDay`):** Valor de 0 (longe) a 1 (perto) de um feriado.
+    *   **Mês (Month):** A sazonalidade é crucial (ex: Nov para Black Friday).
+    *   **Proximidade de Dia Especial (SpecialDay):** Valor de 0 (longe) a 1 (perto) de um feriado.
 
     ### Informações do Visitante e Técnicas
     *   **Tipo de Visitante, Tipo de Tráfego, Região, Sistema Operacional e Navegador:** Categorias que descrevem o perfil da visita.
@@ -56,7 +57,7 @@ with col1:
     administrative = st.number_input('Páginas Administrativas Visitadas', min_value=0, value=0)
     informational = st.number_input('Páginas Informativas Visitadas', min_value=0, value=0)
     product_related = st.number_input('Páginas de Produto Visitadas', min_value=0, value=1)
-
+    
 with col2:
     st.subheader("Tempo Gasto (segundos)")
     administrative_duration = st.number_input('Duração em Págs. Administrativas (s)', min_value=0.0, value=0.0, format="%.2f")
@@ -94,8 +95,8 @@ with col6:
 st.divider()
 
 # --- BOTÃO DE PREVISÃO E RESULTADO ---
-if st.button('Prever Probabilidade de Compra', type="primary", use_container_width=True):
-
+if st.button('🔮 Prever Probabilidade de Compra', type="primary", use_container_width=True):
+    
     new_data = pd.DataFrame({
         'Administrative': [administrative], 'Administrative_Duration': [administrative_duration],
         'Informational': [informational], 'Informational_Duration': [informational_duration],
@@ -105,7 +106,7 @@ if st.button('Prever Probabilidade de Compra', type="primary", use_container_wid
         'Month': [month], 'OperatingSystems': [operating_systems], 'Browser': [browser], 
         'Region': [region], 'TrafficType': [traffic_type], 'VisitorType': [visitor_type], 'Weekend': [weekend]
     })
-
+    
     month_map_notebook = {abbr: idx for idx, abbr in enumerate(month_abbr) if abbr}
     try:
         month_abbr_map = {'June': 'Jun'}
@@ -113,21 +114,28 @@ if st.button('Prever Probabilidade de Compra', type="primary", use_container_wid
         new_data['Month_Num'] = new_data['Month_Abbr'].map(month_map_notebook)
     except:
         new_data['Month_Num'] = new_data['Month'].map(month_map_notebook)
-
+    
     new_data['TotalPageVisits'] = new_data['Administrative'] + new_data['Informational'] + new_data['ProductRelated']
     new_data['TotalDuration'] = new_data['Administrative_Duration'] + new_data['Informational_Duration'] + new_data['ProductRelated_Duration']
     new_data['PagesPerMinute'] = new_data['TotalPageVisits'] / np.where(new_data['TotalDuration'] > 0, new_data['TotalDuration'] / 60, 1)
     new_data['ProductEngagement'] = np.where(new_data['TotalPageVisits'] > 0, new_data['ProductRelated'] / new_data['TotalPageVisits'], 0)
 
     with st.spinner("Analisando os dados..."):
+        # Nós ainda calculamos a probabilidade para poder mostrá-la como informação de apoio.
         prob = loaded_pipe.predict_proba(new_data)[0][1]
+        # A previsão binária vem do método .predict()
         prediction = loaded_pipe.predict(new_data)[0]
 
+    # --- O BLOCO DE RESULTADO FOI MODIFICADO AQUI ---
     st.subheader('Veredito da Previsão:')
-
+    
     if prediction == 1:
-        st.success('Previsão: O usuário VAI COMPRAR.')
+        # Usamos uma caixa de sucesso (verde) para a previsão positiva.
+        st.success('✅ **Previsão: O usuário VAI COMPRAR.**')
+        # A probabilidade entra como uma informação secundária de confiança.
         st.info(f"O modelo está **{prob:.1%}** confiante nesta previsão.")
     else:
-        st.error('Previsão: O usuário NÃO VAI COMPRAR.')
+        # Usamos uma caixa de erro (vermelha) para a previsão negativa.
+        st.error('❌ **Previsão: O usuário NÃO VAI COMPRAR.**')
+        # A probabilidade aqui mostra quão baixa era a chance.
         st.info(f"A probabilidade de compra calculada foi de apenas **{prob:.1%}**.")
